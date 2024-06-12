@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-//import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.By;
@@ -108,6 +108,20 @@ public class FacebookSignupPageTest {
                 Arguments.of("Nov", "11"),
                 Arguments.of("Dec", "12")
         );
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1905", "1950", "2020", "2024"})
+    public void yearTestParametrized(String yearInput) throws InterruptedException {
+        driver.findElement(By.xpath("//*[text()='Create new account']")).click();
+        assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
+        Thread.sleep(2000);
+
+        driver.findElement(By.xpath("//*[@title='Year']")).click();
+        driver.findElement(By.xpath("//*[text() = '" + yearInput + "']")).click();
+        String yearValue = driver.findElement(By.xpath("//*[@title='Year']")).getAttribute("value");
+
+        assertEquals(yearInput, yearValue);
     }
 
 }
