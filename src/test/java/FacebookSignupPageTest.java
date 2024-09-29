@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -10,9 +10,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.List;
+//import java.util.List;
 import java.util.stream.Stream;
+
+import java.time.Duration;
+//import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,10 +86,12 @@ public class FacebookSignupPageTest {
 
     @ParameterizedTest
     @MethodSource("dataProvider")
-    public void monthTest(String monthInputName, String monthInputValue) throws InterruptedException {
+    public void monthTest(String monthInputName, String monthInputValue) {
         driver.findElement(By.xpath("//*[text()='Create new account']")).click();
         assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
-        Thread.sleep(3000);
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@title='Month']")));
 
         driver.findElement(By.xpath("//*[@title='Month']")).click();
         driver.findElement(By.xpath("//*[text() = '" + monthInputName + "']")).click();
@@ -112,10 +119,11 @@ public class FacebookSignupPageTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"1905", "1950", "2020", "2024"})
-    public void yearTestParametrized(String yearInput) throws InterruptedException {
+    public void yearTestParametrized(String yearInput) {
         driver.findElement(By.xpath("//*[text()='Create new account']")).click();
         assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
-        Thread.sleep(2000);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@title='Year']")));
 
         driver.findElement(By.xpath("//*[@title='Year']")).click();
         driver.findElement(By.xpath("//*[text() = '" + yearInput + "']")).click();
@@ -124,4 +132,69 @@ public class FacebookSignupPageTest {
         assertEquals(yearInput, yearValue);
     }
 
+    @Test
+    public void gendersTest() {
+        String femaleXpath = "//*[text()='Female']//following-sibling::*[@type='radio']";
+        String maleXpath = "//*[text()='Male']//following-sibling::*[@type='radio']";
+        String customXpath = "//*[text()='Custom']//following-sibling::*[@type='radio']";
+
+        driver.findElement(By.xpath("//*[text()='Create new account']")).click();
+        assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(femaleXpath)));
+
+        //verify female gender is checked
+        WebElement femaleButton = driver.findElement(By.xpath(femaleXpath));
+        femaleButton.click();
+        String isFemaleChecked = driver.findElement(By.xpath(femaleXpath)).getAttribute("checked");
+        assertNotNull(isFemaleChecked);
+        assertEquals("true", isFemaleChecked);
+
+        //verify male gender is checked
+        WebElement maleButton = driver.findElement(By.xpath(maleXpath));
+        maleButton.click();
+        String isMaleChecked = driver.findElement(By.xpath(maleXpath)).getAttribute("checked");
+        assertNotNull(isMaleChecked);
+        assertEquals("true", isMaleChecked);
+
+        //verify custom gender is checked
+        WebElement customButton = driver.findElement(By.xpath(customXpath));
+        customButton.click();
+        String isCustomChecked = driver.findElement(By.xpath(customXpath)).getAttribute("checked");
+        assertNotNull(isCustomChecked);
+        assertEquals("true", isCustomChecked);
+    }
+
+    @Test
+    public void termsLinkTest() {
+        String termsXPath = "//a[text()='Terms' and @id='terms-link']";
+
+        driver.findElement(By.xpath("//*[text()='Create new account']")).click();
+        assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(termsXPath))).click();
+
+        for (String str : driver.getWindowHandles()) {
+            driver.switchTo().window(str);
+        }
+        assertEquals("https://www.facebook.com/legal/terms/update", driver.getCurrentUrl());
+    }
+
+    @Test
+    public void policyLinksTest() {
+        String policyXPath = "//a[text()='Privacy Policy' and @id='privacy-link']";
+
+        driver.findElement(By.xpath("//*[text()='Create new account']")).click();
+        assertNotNull(driver.findElement(By.xpath("//*[text()='Sign Up']")));
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(policyXPath))).click();
+
+        for (String str : driver.getWindowHandles()) {
+            driver.switchTo().window(str);
+        }
+        assertEquals("https://www.facebook.com/privacy/policy/?entry_point=data_policy_redirect&entry=0", driver.getCurrentUrl());
+    }
 }
